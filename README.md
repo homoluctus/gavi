@@ -1,6 +1,6 @@
 <p align="center"><img src="./assets/img/logo.png"></p>
 
-
+<p align="center"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/homoluctus/gavi/Unit%20Test?label=test"> <img alt="GitHub" src="https://img.shields.io/github/license/homoluctus/gavi"> <img alt="npm" src="https://img.shields.io/npm/v/gavi"> <img alt="node-current" src="https://img.shields.io/node/v/gavi"></p>
 
 ## What's gavi
 

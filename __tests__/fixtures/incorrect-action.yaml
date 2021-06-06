@@ -1,0 +1,8 @@
+name: Tweet Message Action
+author: lazy-actions
+inputs:
+  message:
+    required: false
+branding:
+  icon: hash
+  color: blue

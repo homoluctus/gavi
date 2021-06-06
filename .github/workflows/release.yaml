@@ -37,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ env.WORKFLOW_NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Build
         run: |
@@ -44,6 +45,6 @@ jobs:
           yarn run build
 
       - name: Publish
-        run: yarn publish
+        run: yarn publish --non-interactive
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

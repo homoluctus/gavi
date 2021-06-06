@@ -1,0 +1,13 @@
+name: Tweet Message Action
+author: lazy-actions
+description: Tweet message to twitter
+inputs:
+  message:
+    description: Plain message to tweet
+    required: false
+runs:
+  using: node12
+  main: dist/index.js
+branding:
+  icon: hash
+  color: blue

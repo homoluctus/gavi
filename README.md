@@ -9,6 +9,18 @@ Validate the syntax using the following JSON schema:
 - https://json.schemastore.org/github-workflow
 - https://json.schemastore.org/github-action
 
+## Install
+
+```bash
+npm i -g gavi
+```
+
+or
+
+```bash
+yarn global add gavi
+```
+
 ## Usage
 
 ```bash

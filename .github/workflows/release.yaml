@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  WORKFLOW_NODE_VERSION: '14'
+
+jobs:
+  github:
+    name: Create release package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.WORKFLOW_NODE_VERSION }}
+
+      - name: Build
+        run: |
+          yarn install --frozen-lockfile
+          yarn run build
+
+      - uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  npm:
+    name: Publish to NPM registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.WORKFLOW_NODE_VERSION }}
+
+      - name: Build
+        run: |
+          yarn install --frozen-lockfile
+          yarn run build
+
+      - name: Publish
+        run: yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -7,12 +7,14 @@ import { Reporter } from './reporter';
 const { version } = require('../package.json');
 
 export async function run(): Promise<void> {
-  const argv = parseArgv();
-  logger.level = argv.logLevel;
-  logger.silent = argv.silent;
-
   try {
+    const argv = parseArgv();
+
+    logger.level = argv.logLevel;
+    logger.silent = argv.silent;
+
     const errors = await validate(argv.filename, argv.schemaType);
+
     if (errors) {
       const reporter = new Reporter(argv.format);
       reporter.dump(errors);
@@ -72,9 +74,14 @@ function parseArgv(): Argv {
     .usage('Usage: $0 <command> [options]')
     .help().argv;
 
+  const schemaType = argv._[0] as SchemaType;
+  if (!['action', 'workflow'].includes(schemaType)) {
+    throw new Error('Please specify "action" or "workflow" subcommand');
+  }
+
   return {
     filename: argv.filename as string,
-    schemaType: argv._[0] as SchemaType,
+    schemaType,
     format: argv.format as ReportFormat,
     logLevel: nameToNum[argv.logLevel],
     silent: argv.silent

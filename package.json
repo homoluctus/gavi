@@ -1,6 +1,6 @@
 {
   "name": "gavi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Validator for GitHub Actions workflow and action metadata",
   "bin": {
     "gavi": "./bin/gavi.js"

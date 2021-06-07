@@ -54,7 +54,7 @@ gavi workflow __tests__/fixtures/correct-workflow.yaml
 ### 2. Fail validation
 
 ```bash
-workflow __tests__/fixtures/incorrect-workflow.yaml
+gavi workflow __tests__/fixtures/incorrect-workflow.yaml
 ```
 
 ![failed validation](./assets/img/failed_validation.png)

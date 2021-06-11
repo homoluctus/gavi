@@ -30,9 +30,14 @@ const tableFormat: TableFormat = {
   }
 };
 
+function calcColumnLength(str: string): number {
+  return str.length + tableFormat.padding * 2;
+}
+
 class Meta {
   static readonly maxWidth: number = process.stdout.columns;
   static maxColumnWidth: number[] = [];
+  static needsAjustment: boolean = false;
   private static updated: boolean = false;
 
   static updateWidth(): void {
@@ -43,8 +48,9 @@ class Meta {
     const sum = this.maxColumnWidth.reduce((sum, ele) => sum + ele);
     const diff = sum - this.maxWidth;
     if (diff > 0) {
-      const shrink = Math.ceil(diff / this.maxColumnWidth.length);
+      const shrink = Math.ceil(diff / this.maxColumnWidth.length) + 1;
       this.maxColumnWidth = this.maxColumnWidth.map((w) => w - shrink);
+      this.needsAjustment = true;
     }
     this.updated = true;
   }
@@ -55,8 +61,9 @@ class Node {
   isChunk: boolean = false;
   next: Node | undefined = undefined;
 
-  constructor(data: string[]) {
+  constructor(data: string[], isChunk: boolean = false) {
     this.data = data;
+    this.isChunk = isChunk;
   }
 }
 
@@ -82,14 +89,13 @@ class LinkedList {
   }
 
   private insertMeta(data: string[]): void {
-    const paddingCnt = tableFormat.padding * 2;
     if (!Meta.maxColumnWidth.length) {
       data.forEach((v, i) => {
-        Meta.maxColumnWidth[i] = v.length + paddingCnt;
+        Meta.maxColumnWidth[i] = calcColumnLength(v);
       });
     } else {
       data.forEach((v, i) => {
-        const strlen = v.length + paddingCnt;
+        const strlen = calcColumnLength(v);
         if (Meta.maxColumnWidth[i] < strlen) {
           Meta.maxColumnWidth[i] = strlen;
         }
@@ -111,19 +117,19 @@ class Renderer {
   }
 
   render(tableLinkedList: LinkedList): string {
-    const headers = tableLinkedList.head;
-    if (headers === undefined) {
+    const head = tableLinkedList.head;
+    if (head === undefined) {
       throw new Error('Data of table headers does not exist');
     }
 
-    let result: string = this.line;
-    result += this.renderHeaders(headers);
-    result += this.betweenHeaderRows;
-
-    if (headers.next === undefined) {
+    const { headers, nextNode } = this.renderHeaders(head);
+    if (nextNode === undefined) {
       throw new Error('Data of table body does not exist');
     }
-    result += this.renderRows(headers.next);
+
+    let result = `${this.line}${headers}`;
+    result += this.betweenHeaderRows;
+    result += this.renderRows(nextNode);
     return result;
   }
 
@@ -134,27 +140,32 @@ class Renderer {
     return `${chars.begin}${middle}${chars.end}${tableFormat.newline}`;
   }
 
-  renderHeaders(node: Node): string {
+  renderHeaders(node: Node): { headers: string; nextNode: Node | undefined } {
     let result = '';
     result += this.renderRow(node);
     while (node.next && node.next.isChunk) {
       node = node.next;
       result += this.renderRow(node);
     }
-    return result;
+    return { headers: result, nextNode: node.next };
   }
 
   renderRows(node: Node): string {
     let result = '';
     let currentNode: Node | undefined = node;
     while (currentNode) {
-      result += `${this.renderRow(currentNode)}${this.line}`;
+      result += `${this.renderRow(currentNode)}`;
+
       currentNode = currentNode.next;
+      if (!currentNode || !currentNode.isChunk) {
+        result += this.line;
+      }
     }
     return result;
   }
 
   renderRow(node: Node): string {
+    this.adjust(node);
     const chars = tableFormat.chars.row;
     const row = node.data
       .map((v, i) => this.pad(v, Meta.maxColumnWidth[i]))
@@ -162,8 +173,53 @@ class Renderer {
     return `${chars.begin}${row}${chars.end}${tableFormat.newline}`;
   }
 
-  // TODO
-  adjust(node: Node): void {}
+  adjust(node: Node): void {
+    if (!Meta.needsAjustment) {
+      return;
+    }
+
+    node.data.forEach((v, i) => {
+      const strlen = v.length;
+      const maxColumnWidthWithoutPadding =
+        Meta.maxColumnWidth[i] - tableFormat.padding * 2;
+      if (strlen <= maxColumnWidthWithoutPadding) {
+        return;
+      }
+
+      let currentNode = node;
+      const cnt = Math.ceil(strlen / maxColumnWidthWithoutPadding);
+      for (let j = 0; j < cnt; j++) {
+        const partOfStr = v.substring(
+          j * maxColumnWidthWithoutPadding,
+          (j + 1) * maxColumnWidthWithoutPadding
+        );
+
+        if (j === 0) {
+          currentNode.data[i] = partOfStr;
+        } else if (currentNode.next) {
+          if (currentNode.next.isChunk) {
+            currentNode.next.data[i] = partOfStr;
+          } else {
+            const chunk = this.creatChunk(node.data.length, i, partOfStr);
+            const oldNextNode = currentNode.next;
+            currentNode.next = new Node(chunk, true);
+            currentNode.next.next = oldNextNode;
+          }
+          currentNode = currentNode.next;
+        } else {
+          const chunk = this.creatChunk(node.data.length, i, partOfStr);
+          currentNode.next = new Node(chunk, true);
+          currentNode = currentNode.next;
+        }
+      }
+    });
+  }
+
+  creatChunk(len: number, index: number, str: string): string[] {
+    const chunk = Array(len).fill('');
+    chunk[index] = str;
+    return chunk;
+  }
 
   pad(str: string, maxColWidth: number): string {
     str = str.trim();

@@ -1,0 +1,12 @@
++----------+------------------------+------------------------------------+
+| property | parameter              | message                            |
+| Path     |                        |                                    |
++==========+========================+====================================+
+|          | missingProperty: descr | must have required property 'descr |
+|          | iption                 | iption'                            |
++----------+------------------------+------------------------------------+
+|          | missingProperty: runs  | must have required property 'runs' |
++----------+------------------------+------------------------------------+
+| /inputs/ | missingProperty: descr | must have required property 'descr |
+| message  | iption                 | iption'                            |
++----------+------------------------+------------------------------------+

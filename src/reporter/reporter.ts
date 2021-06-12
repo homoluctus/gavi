@@ -1,6 +1,7 @@
 import { ErrorObject } from 'ajv/dist/types';
 import { table } from './table';
 import { ReportFormat, ReportObject } from '../interfaces';
+import { logger } from '../logger';
 
 export class Reporter {
   format: ReportFormat;
@@ -28,14 +29,15 @@ export class Reporter {
   }
 
   private formatErrors(rawErrors: ErrorObject[]): ReportObject[] {
-    const newErrorObj: ReportObject[] = [];
+    const reportObj: ReportObject[] = [];
     rawErrors.forEach((err) =>
-      newErrorObj.push({
+      reportObj.push({
         propertyPath: err.instancePath,
         parameter: err.params,
         message: err.message as string
       })
     );
-    return newErrorObj;
+    logger.info(JSON.stringify(reportObj));
+    return reportObj;
   }
 }

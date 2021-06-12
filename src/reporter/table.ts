@@ -1,9 +1,10 @@
 import yaml from 'js-yaml';
 import { Line, ReportObject, TableFormat } from '../interfaces';
 
-export function table(data: ReportObject[]): string {
+export function table(data: ReportObject[], maxWidth?: number): string {
+  const meta = new Meta(maxWidth);
   const headers = Object.keys(data[0]);
-  const tableLinkedList = new LinkedList();
+  const tableLinkedList = new LinkedList(meta);
   tableLinkedList.add(headers);
 
   data.forEach((d) => {
@@ -15,7 +16,8 @@ export function table(data: ReportObject[]): string {
     tableLinkedList.add(row);
   });
 
-  const renderer = new Renderer();
+  meta.updateWidth();
+  const renderer = new Renderer(meta);
   return renderer.render(tableLinkedList);
 }
 
@@ -35,12 +37,16 @@ function calcColumnLength(str: string): number {
 }
 
 class Meta {
-  static readonly maxWidth: number = process.stdout.columns;
-  static maxColumnWidth: number[] = [];
-  static needsAjustment: boolean = false;
-  private static updated: boolean = false;
+  maxWidth: number;
+  maxColumnWidth: number[] = [];
+  needsAjustment: boolean = false;
+  private updated: boolean = false;
 
-  static updateWidth(): void {
+  constructor(maxWidth: number = process.stdout.columns) {
+    this.maxWidth = maxWidth;
+  }
+
+  updateWidth(): void {
     if (this.updated) {
       return;
     }
@@ -48,7 +54,7 @@ class Meta {
     const sum = this.maxColumnWidth.reduce((sum, ele) => sum + ele);
     const diff = sum - this.maxWidth;
     if (diff > 0) {
-      const shrink = Math.ceil(diff / this.maxColumnWidth.length) + 1;
+      const shrink = Math.ceil(diff / this.maxColumnWidth.length) + 2;
       this.maxColumnWidth = this.maxColumnWidth.map((w) => w - shrink);
       this.needsAjustment = true;
     }
@@ -68,7 +74,12 @@ class Node {
 }
 
 class LinkedList {
+  meta: Meta;
   head: Node | undefined = undefined;
+
+  constructor(meta: Meta) {
+    this.meta = meta;
+  }
 
   add(data: string[]): void {
     this.insertMeta(data);
@@ -89,15 +100,15 @@ class LinkedList {
   }
 
   private insertMeta(data: string[]): void {
-    if (!Meta.maxColumnWidth.length) {
+    if (!this.meta.maxColumnWidth.length) {
       data.forEach((v, i) => {
-        Meta.maxColumnWidth[i] = calcColumnLength(v);
+        this.meta.maxColumnWidth[i] = calcColumnLength(v);
       });
     } else {
       data.forEach((v, i) => {
         const strlen = calcColumnLength(v);
-        if (Meta.maxColumnWidth[i] < strlen) {
-          Meta.maxColumnWidth[i] = strlen;
+        if (this.meta.maxColumnWidth[i] < strlen) {
+          this.meta.maxColumnWidth[i] = strlen;
         }
       });
     }
@@ -107,9 +118,10 @@ class LinkedList {
 class Renderer {
   betweenHeaderRows: string;
   line: string;
+  meta: Meta;
 
-  constructor() {
-    Meta.updateWidth();
+  constructor(meta: Meta) {
+    this.meta = meta;
     this.betweenHeaderRows = this.renderLine(
       tableFormat.chars.betweenHeaderRows
     );
@@ -134,7 +146,7 @@ class Renderer {
   }
 
   renderLine(chars: Line): string {
-    const middle = Meta.maxColumnWidth
+    const middle = this.meta.maxColumnWidth
       .map((w) => chars.middle.repeat(w))
       .join(tableFormat.chars.line.sep);
     return `${chars.begin}${middle}${chars.end}${tableFormat.newline}`;
@@ -168,20 +180,20 @@ class Renderer {
     this.adjust(node);
     const chars = tableFormat.chars.row;
     const row = node.data
-      .map((v, i) => this.pad(v, Meta.maxColumnWidth[i]))
+      .map((v, i) => this.pad(v, this.meta.maxColumnWidth[i]))
       .join(chars.sep);
     return `${chars.begin}${row}${chars.end}${tableFormat.newline}`;
   }
 
   adjust(node: Node): void {
-    if (!Meta.needsAjustment) {
+    if (!this.meta.needsAjustment) {
       return;
     }
 
     node.data.forEach((v, i) => {
       const strlen = v.length;
       const maxColumnWidthWithoutPadding =
-        Meta.maxColumnWidth[i] - tableFormat.padding * 2;
+        this.meta.maxColumnWidth[i] - tableFormat.padding * 2;
       if (strlen <= maxColumnWidthWithoutPadding) {
         return;
       }

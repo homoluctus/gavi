@@ -1,7 +1,5 @@
 export type LogLevel = 0 | 1 | 2 | 3;
 
-export type ReportFormat = 'json' | 'table';
-
 export type SchemaType = 'action' | 'workflow';
 
 export type YamlLoadFormat = string | number | object;
@@ -11,9 +9,11 @@ export interface ValidatorOption {
   strict?: boolean;
 }
 
-export interface ErrorReport {
-  instancePath: string;
-  params: Record<string, any>;
+export type ReportFormat = 'json' | 'table';
+
+export interface ReportObject {
+  propertyPath: string;
+  parameter: Record<string, any>;
   message: string;
 }
 
@@ -23,4 +23,30 @@ export interface Argv {
   logLevel: LogLevel;
   schemaType: SchemaType;
   silent: boolean;
+}
+
+export interface Line {
+  begin: string;
+  middle: string;
+  sep: string;
+  end: string;
+}
+
+interface Row {
+  begin: string;
+  sep: string;
+  end: string;
+}
+
+export interface TableFormat {
+  newline: string;
+  padding: number;
+  paddingStr: string;
+  chars: TableChars;
+}
+
+interface TableChars {
+  betweenHeaderRows: Line;
+  line: Line;
+  row: Row;
 }

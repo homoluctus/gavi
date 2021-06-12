@@ -2,7 +2,7 @@ import yargs from 'yargs/yargs';
 import { logger, nameToNum } from './logger';
 import { Argv, ReportFormat, SchemaType } from './interfaces';
 import { validate } from './validator';
-import { Reporter } from './reporter';
+import { Reporter } from './reporter/reporter';
 
 const { version } = require('../package.json');
 

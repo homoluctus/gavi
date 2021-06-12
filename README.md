@@ -42,19 +42,12 @@ Options:
 
 ## Example
 
-### 1. Pass validation
-
-```bash
-gavi workflow __tests__/fixtures/correct-workflow.yaml
-```
-
-![passed validation](./assets/img/passed_validation.png)
-
-
-### 2. Fail validation
+### Failed validation
 
 ```bash
 gavi workflow __tests__/fixtures/incorrect-workflow.yaml
 ```
+
+**Result**
 
 ![failed validation](./assets/img/failed_validation.png)

@@ -32,7 +32,7 @@ class Logger {
   private log(level: LogLevel, message: string): void {
     const stream = process[level < INFO ? 'stderr' : 'stdout'];
     const prefix = chalk`{${[numToColor[level]]} ${numToName[level]}}`;
-    message = `${prefix} | ${message}${this.newline}`;
+    message = `${prefix} ${message}${this.newline}`;
     stream.write(message);
   }
 

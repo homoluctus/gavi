@@ -37,7 +37,6 @@ export class Reporter {
         message: err.message as string
       })
     );
-    logger.info(JSON.stringify(reportObj));
     return reportObj;
   }
 }

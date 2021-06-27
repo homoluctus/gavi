@@ -1,7 +1,6 @@
 import { ErrorObject } from 'ajv/dist/types';
 import { table } from './table';
 import { ReportFormat, ReportObject } from '../interfaces';
-import { logger } from '../logger';
 
 export class Reporter {
   format: ReportFormat;

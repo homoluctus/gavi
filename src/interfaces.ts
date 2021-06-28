@@ -24,29 +24,3 @@ export interface Argv {
   schemaType: SchemaType;
   silent: boolean;
 }
-
-export interface Line {
-  begin: string;
-  middle: string;
-  sep: string;
-  end: string;
-}
-
-interface Row {
-  begin: string;
-  sep: string;
-  end: string;
-}
-
-export interface TableFormat {
-  newline: string;
-  padding: number;
-  paddingStr: string;
-  chars: TableChars;
-}
-
-interface TableChars {
-  betweenHeaderRows: Line;
-  line: Line;
-  row: Row;
-}

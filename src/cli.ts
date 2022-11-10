@@ -18,6 +18,7 @@ export async function run(): Promise<void> {
     if (errors) {
       const reporter = new Reporter(argv.format);
       reporter.dump(errors);
+      process.exitCode = 1;
     }
   } catch (err) {
     logger.error(err.message);
